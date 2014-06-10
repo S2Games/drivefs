@@ -2,9 +2,7 @@ package main
 
 import (
 	"code.google.com/p/goauth2/oauth"
-	"io"
-	"os"
-	//drive "code.google.com/p/google-api-go-client/drive/v2"
+	drive "code.google.com/p/google-api-go-client/drive/v2"
 	"fmt"
 	"log"
 )
@@ -17,7 +15,6 @@ func main() {
 	redirectURL := "urn:ietf:wg:oauth:2.0:oob"
 	authURL := "https://accounts.google.com/o/oauth2/auth"
 	tokenURL := "https://accounts.google.com/o/oauth2/token"
-	requestURL := "https://www.googleapis.com/drive/v2/files"
 	code := "4/Dy_oHh2NXFotmPD0rRTBdThTHX41.gkgjYQdAoFQQmmS0T3UFEsOAEq0FjQI"
 	cachefile := "cache.json"
 
@@ -52,11 +49,16 @@ func main() {
 		fmt.Printf("Token is cached in %v\n", config.TokenCache)
 	}
 	transport.Token = token
-	r, err := transport.Client().Get(requestURL)
+	client := transport.Client()
 	if err != nil {
 		log.Fatal("Get", err)
 	}
-	defer r.Body.Close()
-	io.Copy(os.Stdout, r.Body)
-	fmt.Println()
+	d, err := drive.New(client)
+	if err != nil {
+		log.Fatal("Client", err)
+	}
+	files, err := d.Files.List().Do()
+	for i := range files.Items {
+		fmt.Println(files.Items[i].Title)
+	}
 }
