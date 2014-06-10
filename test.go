@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/goauth2/oauth"
 	drive "code.google.com/p/google-api-go-client/drive/v2"
 	"fmt"
+	// "github.com/eliothedeman/drivefs/fs"
 	"log"
 )
 
@@ -58,7 +59,9 @@ func main() {
 		log.Fatal("Client", err)
 	}
 	files, err := d.Files.List().Do()
-	for i := range files.Items {
-		fmt.Println(files.Items[i].Title)
+	for i := 0; i < len(files.Items); i++ {
+		fmt.Println(files.Items[i].FileSize, files.Items[i].MimeType)
+
 	}
+
 }

@@ -12,4 +12,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if err := fs.Serve(c, fs)
 }
