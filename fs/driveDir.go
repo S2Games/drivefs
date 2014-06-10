@@ -60,44 +60,52 @@ func (d *DriveDir) Lookup(name string, intr fs.Intr) (fs.Node, fuse.Error) {
 
 // ReadDir return a slice of directory entries
 func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
-	// List of directories to return
-	var dirs []fuse.Dirent
+	dirChan := make(chan *[]fuse.Dirent)
+	go func() {
+		// List of directories to return
+		var dirs []fuse.Dirent
+		// get all new list of files
+		f, err := service.Files.List().Do()
+		if err != nil {
+			return nil, err
+		}
+		fileList := f.Items
+		// Populate idToFile with new ids
+		for i := range fileList {
+			idToFile[fileList[i].Id] = fileList[i]
+		}
+		// get list of children
+		c, err := service.Children.List(d.Dir.Id).Do()
+		// Get children of this folder
+		children := c.Items
 
-	// get all new list of files
-	f, err := service.Files.List().Do()
-	if err != nil {
-		return nil, err
-	}
-	fileList := f.Items
-	// Populate idToFile with new ids
-	for i := range fileList {
-		idToFile[fileList[i].Id] = fileList[i]
-	}
-	// get list of children
-	c, err := service.Children.List(d.Dir.Id).Do()
-	// Get children of this folder
-	children := c.Items
+		dirs = make([]fuse.Dirent, len(children))
 
-	dirs = make([]fuse.Dirent, len(children))
+		// populate dirs with children
+		for i := range children {
+			// pull out a child temporarally
+			tmp := idToFile[children[i].Id]
+			// If child is a folder/directory create a DirveDir else create a DriveFile
+			if strings.Contains(tmp.File.MimeType, "folder") {
+				dirs[i] = fuse.Dirent{
+					Name: tmp.File.Title,
+					Type: fuse.DT_Dir,
+				}
 
-	// populate dirs with children
-	for i := range children {
-		// pull out a child temporarally
-		tmp := idToFile[children[i].Id]
-		// If child is a folder/directory create a DirveDir else create a DriveFile
-		if strings.Contains(tmp.File.MimeType, "folder") {
-			dirs[i] = fuse.Dirent{
-				Name: tmp.File.Title,
-				Type: fuse.DT_Dir,
-			}
-
-		} else {
-			dirs[i] = fuse.Dirent{
-				Name: tmp.File.Title,
-				Type: fuse.DT_File,
+			} else {
+				dirs[i] = fuse.Dirent{
+					Name: tmp.File.Title,
+					Type: fuse.DT_File,
+				}
 			}
 		}
-
+	}()
+	// Wait for the lookups to be done, or die if interupt happens
+	select {
+	case tmp <- dirChan:
+		return tmp, nil
+	case <-intr:
+		return nil, fuse.EINTR
 	}
 
 }
