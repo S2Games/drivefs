@@ -99,6 +99,7 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 				}
 			}
 		}
+		dirChan <- &dirs
 	}()
 	// Wait for the lookups to be done, or die if interupt happens
 	select {
