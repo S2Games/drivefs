@@ -6,8 +6,6 @@ import (
 	drive "code.google.com/p/google-api-go-client/drive/v2"
 	"io/ioutil"
 	"log"
-	"net/http"
-	"os"
 	"time"
 )
 
@@ -35,17 +33,16 @@ func (d *DriveFile) ReadAll(intr fs.Intr) ([]byte, fuse.Error) {
 	go func() {
 		// grab file from google drive api
 		b, err := client.Get(d.File.DownloadUrl)
-		defer b.close()
 		if err != nil {
 			log.Println(err)
-			errChan <- errChan
+			errChan <- err
 			return
 		}
 		// read the data from body and close connection
 		c, err := ioutil.ReadAll(b.Body)
 		if err != nil {
 			log.Println(err)
-			errChan <- errChan
+			errChan <- err
 		}
 		byteChan <- &c
 	}()

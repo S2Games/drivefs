@@ -4,11 +4,9 @@ import (
 	"bazil.org/fuse"
 	"bazil.org/fuse/fs"
 	drive "code.google.com/p/google-api-go-client/drive/v2"
-	"io/ioutil"
 	"log"
-	"net/http"
-	"os"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -17,11 +15,10 @@ type DriveDir struct {
 	Dir      *drive.File
 	Modified time.Time
 	Created  time.Time
-	Root     bool
 }
 
 // Attr returns the file attributes
-func (d *DriveDir) Attr() fuse.Attr {
+func (DriveDir) Attr() fuse.Attr {
 	return fuse.Attr{
 		Mode: 0644,
 	}
@@ -67,12 +64,12 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 		// get all new list of files
 		f, err := service.Files.List().Do()
 		if err != nil {
-			return nil, err
+			log.Println(err)
 		}
 		fileList := f.Items
 		// Populate idToFile with new ids
 		for i := range fileList {
-			idToFile[fileList[i].Id] = fileList[i]
+			idToFile[fileList[i].Id] = DriveFile{File: fileList[i]}
 		}
 		// get list of children
 		c, err := service.Children.List(d.Dir.Id).Do()
@@ -103,8 +100,8 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 	}()
 	// Wait for the lookups to be done, or die if interupt happens
 	select {
-	case tmp <- dirChan:
-		return tmp, nil
+	case tmp := <-dirChan:
+		return *tmp, nil
 	case <-intr:
 		return nil, fuse.EINTR
 	}
