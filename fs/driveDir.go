@@ -111,42 +111,42 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 
 }
 
-// Mkdir does nothing, because subfs is read-only
+// Mkdir does nothing, because drivefs is read-only
 func (d *DriveDir) Mkdir(req *fuse.MkdirRequest, intr fs.Intr) (fs.Node, fuse.Error) {
 	return nil, fuse.Errno(syscall.EROFS)
 }
 
-// Mknod does nothing, because subfs is read-only
+// Mknod does nothing, because drivefs is read-only
 func (d *DriveDir) Mknod(req *fuse.MknodRequest, intr fs.Intr) (fs.Node, fuse.Error) {
 	return nil, fuse.Errno(syscall.EROFS)
 }
 
-// Remove does nothing, because subfs is read-only
+// Remove does nothing, because drivefs is read-only
 func (d *DriveDir) Remove(req *fuse.RemoveRequest, intr fs.Intr) fuse.Error {
 	return fuse.Errno(syscall.EROFS)
 }
 
-// Removexattr does nothing, because subfs is read-only
+// Removexattr does nothing, because drivefs is read-only
 func (d *DriveDir) Removexattr(req *fuse.RemovexattrRequest, intr fs.Intr) fuse.Error {
 	return fuse.Errno(syscall.EROFS)
 }
 
-// Rename does nothing, because subfs is read-only
+// Rename does nothing, because drivefs is read-only
 func (d *DriveDir) Rename(req *fuse.RenameRequest, node fs.Node, intr fs.Intr) fuse.Error {
 	return fuse.Errno(syscall.EROFS)
 }
 
-// Setattr does nothing, because subfs is read-only
+// Setattr does nothing, because drivefs is read-only
 func (d *DriveDir) Setattr(req *fuse.SetattrRequest, res *fuse.SetattrResponse, intr fs.Intr) fuse.Error {
 	return fuse.Errno(syscall.EROFS)
 }
 
-// Setxattr does nothing, because subfs is read-only
+// Setxattr does nothing, because drivefs is read-only
 func (d *DriveDir) Setxattr(req *fuse.SetxattrRequest, intr fs.Intr) fuse.Error {
 	return fuse.Errno(syscall.EROFS)
 }
 
-// Symlink does nothing, because subfs is read-only
+// Symlink does nothing, because drivefs is read-only
 func (d *DriveDir) Symlink(req *fuse.SymlinkRequest, intr fs.Intr) (fs.Node, fuse.Error) {
 	return nil, fuse.Errno(syscall.EROFS)
 }
