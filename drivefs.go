@@ -6,6 +6,7 @@ import (
 	"github.com/eliothedeman/drivefs/drivefs"
 	"log"
 	"os"
+	"time"
 )
 
 // Collect command line arguments for OAUTH and mounting options
@@ -20,6 +21,9 @@ var (
 	requestURL   = flag.String("request_url", "https://www.googleapis.com/oauth2/v1/userinfo", "API request")
 	code         = flag.String("code", "", "Authorization Code")
 	cachefile    = flag.String("cache", "cache.json", "Token cache file")
+
+	// Filesystem options
+	mountpoint = flag.String("mount", "", "Mount point for drivefs")
 )
 
 func main() {
@@ -45,5 +49,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Attempt to mount the filesystem, fail if mountpoint is not given
+	if *mountpoint == "" {
+		log.Fatal("Must provide mountpoint via argument -mount")
+	}
+	err = server.Mount(*mountpoint)
+	if err != nil {
+		log.Println(err)
+	}
+	go server.Serve()
+	time.Sleep(10 * time.Second)
+	server.Unmount(*mountpoint, 3)
 
 }

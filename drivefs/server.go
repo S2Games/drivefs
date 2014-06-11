@@ -1,6 +1,8 @@
 package drivefs
 
 import (
+	"bazil.org/fuse"
+	"bazil.org/fuse/fs"
 	"code.google.com/p/goauth2/oauth"
 	drive "code.google.com/p/google-api-go-client/drive/v2"
 	"log"
@@ -9,6 +11,7 @@ import (
 // DriveFs is a struct which holds the FUSE filesystem
 type Server struct {
 	Config *oauth.Config
+	conn   *fuse.Conn
 }
 
 // initialize and return a new DriveFS
@@ -50,4 +53,35 @@ func NewServer(config *oauth.Config, code string) (*Server, error) {
 	idToFile = make(map[string]DriveFile)
 	service, err = drive.New(client)
 	return d, err
+}
+
+// Mount attmpts to mount the filesystem
+func (s *Server) Mount(mountPoint string) (err error) {
+	s.conn, err = fuse.Mount(mountPoint)
+	return
+}
+
+// Serve attempts to serve the filesystem
+func (s *Server) Serve() {
+	if err := fs.Serve(s.conn, Root{}); err != nil {
+		log.Fatalf("Could not serve drivefs %s", err.Error())
+	}
+}
+
+// Unmount attempts to unmount the filesystem
+func (s *Server) Unmount(mountPoint string, timeout int) (err error) {
+	for i := 0; i < timeout; i++ {
+		err = fuse.Unmount(mountPoint)
+		if err == nil {
+			err = s.conn.Close()
+			if err != nil {
+				log.Fatalln(err)
+			}
+			return nil
+		}
+		log.Println(err)
+	}
+	err = s.conn.Close()
+	return err
+
 }

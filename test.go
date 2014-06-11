@@ -58,9 +58,22 @@ func main() {
 	if err != nil {
 		log.Fatal("Client", err)
 	}
-	files, err := d.Files.List().Do()
+	f, e := d.Files.List().Do()
+	if e != nil {
+		fmt.Println(err)
+	}
+	fileList := f.Items
+	files, err := d.Children.List("root").Do()
+	if err != nil {
+		fmt.Println(err)
+	}
+	tmp := make(map[string]*drive.File)
+	for i := range fileList {
+		tmp[fileList[i].Id] = fileList[i]
+	}
 	for i := 0; i < len(files.Items); i++ {
-		fmt.Println(files.Items[i].FileSize, files.Items[i].MimeType)
+
+		fmt.Println(tmp[files.Items[i].Id].Title)
 
 	}
 

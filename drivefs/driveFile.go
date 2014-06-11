@@ -14,13 +14,14 @@ type DriveFile struct {
 	File     *drive.File
 	Modified time.Time
 	Created  time.Time
+	Root     bool
 }
 
 // Attr returns the file attributes
 func (d *DriveFile) Attr() fuse.Attr {
 	return fuse.Attr{
 		Mode:  0644,
-		Mtime: d.Modified,
+		Mtime: time.Now(),
 		Size:  uint64(d.File.FileSize),
 	}
 }
@@ -49,8 +50,12 @@ func (d *DriveFile) ReadAll(intr fs.Intr) ([]byte, fuse.Error) {
 	// wait for real to be done, or for file system interupt and return values
 	select {
 	case tmp := <-byteChan:
+		close(byteChan)
+		close(errChan)
 		return *tmp, nil
 	case <-intr:
+		close(byteChan)
+		close(errChan)
 		return nil, fuse.EINTR
 	}
 

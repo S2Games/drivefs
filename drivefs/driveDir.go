@@ -70,18 +70,23 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 		fileList := f.Items
 		// Populate idToFile with new ids
 		for i := range fileList {
-			idToFile[fileList[i].Id] = DriveFile{File: fileList[i]}
+			idToFile[fileList[i].Id] = DriveFile{File: fileList[i], Root: false}
 		}
 		// get list of children
 		// If d is at root, fetch the root children, else fetch this file's children
+		var c *drive.ChildList
+		var cErr error
 		if d.Root {
-			c, err := service.Children.List("root").Do()
+			c, cErr = service.Children.List("root").Do()
 		} else {
-			c, err := service.Children.List(d.Dir.Id).Do()
+			c, cErr = service.Children.List(d.Dir.Id).Do()
+		}
+		if cErr != nil {
+			log.Println(cErr)
 		}
 
 		// Get children of this folder
-		children := c.Items\
+		children := c.Items
 
 		dirs = make([]fuse.Dirent, len(children))
 
