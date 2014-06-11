@@ -6,7 +6,8 @@ import (
 	"github.com/eliothedeman/drivefs/lib"
 	"log"
 	"os"
-	"time"
+	"os/signal"
+	"syscall"
 )
 
 // Collect command line arguments for OAUTH and mounting options
@@ -56,8 +57,17 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
+	// Start the server
 	go server.Serve(10)
-	time.Sleep(10 * time.Second)
+
+	// wait for a termination before exit
+	killChan := make(chan os.Signal)
+	signal.Notify(killChan, os.Interrupt)
+	signal.Notify(killChan, syscall.SIGTERM)
+	for sig := range killChan {
+		log.Println("drivefs: stopping due to ", sig)
+		break
+	}
 	server.Unmount(*mountpoint, 3)
 
 }
