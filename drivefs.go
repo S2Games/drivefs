@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/goauth2/oauth"
 	"flag"
 	"github.com/eliothedeman/drivefs/drivefs"
+	"log"
 	"os"
 )
 
@@ -39,6 +40,10 @@ func main() {
 		TokenURL:     *tokenURL,
 		TokenCache:   oauth.CacheFile(*cachefile),
 	}
-	drivefs.NewServer(config, *code)
+	// fail if the server can't auth
+	server, err := drivefs.NewServer(config, *code)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
