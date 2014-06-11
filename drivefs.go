@@ -12,8 +12,7 @@ import (
 // Collect command line arguments for OAUTH and mounting options
 var (
 	// OAUTH options
-	clientId     = flag.String("id", "266884823682-qfd1cvgpe2vucokeuhv0qr0bihn87ge4.apps.googleusercontent.com
-", "Client ID")
+	clientId     = flag.String("id", "266884823682-qfd1cvgpe2vucokeuhv0qr0bihn87ge4.apps.googleusercontent.com", "Client ID")
 	clientSecret = flag.String("secret", "6SGgwuVL8KMyFsigaPn2MGBK", "Client Secret")
 	scope        = flag.String("scope", "https://www.googleapis.com/auth/drive", "OAuth scope")
 	redirectURL  = flag.String("redirect_url", "oob", "Redirect URL")
