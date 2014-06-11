@@ -56,7 +56,7 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	go server.Serve()
+	go server.Serve(10)
 	time.Sleep(10 * time.Second)
 	server.Unmount(*mountpoint, 3)
 
