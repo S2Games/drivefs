@@ -21,7 +21,6 @@ var (
 	requestURL   = flag.String("request_url", "https://www.googleapis.com/oauth2/v1/userinfo", "API request")
 	code         = flag.String("code", "", "Authorization Code")
 	cachefile    = flag.String("cache", "cache.json", "Token cache file")
-
 	// Filesystem options
 	mountpoint = flag.String("mount", "", "Mount point for drivefs")
 )

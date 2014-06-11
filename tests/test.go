@@ -12,11 +12,11 @@ func main() {
 
 	clientId := "266884823682-qfd1cvgpe2vucokeuhv0qr0bihn87ge4.apps.googleusercontent.com"
 	clientSecret := "6SGgwuVL8KMyFsigaPn2MGBK"
-	scope := "https://www.googleapis.com/drive/files"
+	scope := "https://www.googleapis.com/auth/drive"
 	redirectURL := "urn:ietf:wg:oauth:2.0:oob"
 	authURL := "https://accounts.google.com/o/oauth2/auth"
 	tokenURL := "https://accounts.google.com/o/oauth2/token"
-	code := "4/Dy_oHh2NXFotmPD0rRTBdThTHX41.gkgjYQdAoFQQmmS0T3UFEsOAEq0FjQI"
+	code := "4/1KWWgmhjszhUjor_khaQnI2eMZM1.AvMtkVA0uv0dmmS0T3UFEsPKgYAYjQI"
 	cachefile := "cache.json"
 
 	// Set up a configuration.
@@ -63,17 +63,10 @@ func main() {
 		fmt.Println(err)
 	}
 	fileList := f.Items
-	files, err := d.Children.List("root").Do()
-	if err != nil {
-		fmt.Println(err)
-	}
-	tmp := make(map[string]*drive.File)
-	for i := range fileList {
-		tmp[fileList[i].Id] = fileList[i]
-	}
-	for i := 0; i < len(files.Items); i++ {
 
-		fmt.Println(tmp[files.Items[i].Id].Title)
+	for i := 0; i < len(fileList); i++ {
+
+		fmt.Println(len(fileList[i].Parents), fileList[i].Title)
 
 	}
 

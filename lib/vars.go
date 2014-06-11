@@ -24,4 +24,9 @@ var (
 
 	// service is a google drive service
 	service *drive.Service
-)
+
+	// dirCache  is a cache of the the current directories, and their children
+	dirCache dirIndexCache
+	
+	// fileCache is a cache of the current files stored by id
+	fileCache fileIndexCache
