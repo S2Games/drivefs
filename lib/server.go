@@ -33,7 +33,6 @@ func NewServer(config *oauth.Config, code string) (*Server, error) {
 			url := d.Config.AuthCodeURL("")
 			log.Println("Visit this URL to get a code, then run again with -code=YOUR_CODE\n")
 			log.Fatalln(url)
-
 		}
 		// Exchange the authorization code for an access token.
 		// ("Here's the code you gave the user, now give me a token!")
