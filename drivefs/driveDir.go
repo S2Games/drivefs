@@ -15,6 +15,7 @@ type DriveDir struct {
 	Dir      *drive.File
 	Modified time.Time
 	Created  time.Time
+	Root     bool
 }
 
 // Attr returns the file attributes
@@ -72,9 +73,15 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 			idToFile[fileList[i].Id] = DriveFile{File: fileList[i]}
 		}
 		// get list of children
-		c, err := service.Children.List(d.Dir.Id).Do()
+		// If d is at root, fetch the root children, else fetch this file's children
+		if d.Root {
+			c, err := service.Children.List("root").Do()
+		} else {
+			c, err := service.Children.List(d.Dir.Id).Do()
+		}
+
 		// Get children of this folder
-		children := c.Items
+		children := c.Items\
 
 		dirs = make([]fuse.Dirent, len(children))
 
