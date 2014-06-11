@@ -27,6 +27,7 @@ var (
 
 	// dirCache  is a cache of the the current directories, and their children
 	dirCache dirIndexCache
-	
+
 	// fileCache is a cache of the current files stored by id
 	fileCache fileIndexCache
+)
