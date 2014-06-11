@@ -12,7 +12,7 @@ var (
 	// OAUTH options
 	clientId     = flag.String("id", "", "Client ID")
 	clientSecret = flag.String("secret", "", "Client Secret")
-	scope        = flag.String("scope", "https://www.googleapis.com/auth/buzz", "OAuth scope")
+	scope        = flag.String("scope", "https://www.googleapis.com/auth/drive", "OAuth scope")
 	redirectURL  = flag.String("redirect_url", "oob", "Redirect URL")
 	authURL      = flag.String("auth_url", "https://accounts.google.com/o/oauth2/auth", "Authentication URL")
 	tokenURL     = flag.String("token_url", "https://accounts.google.com/o/oauth2/token", "Token URL")

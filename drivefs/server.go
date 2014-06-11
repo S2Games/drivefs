@@ -12,7 +12,7 @@ type Server struct {
 }
 
 // initialize and return a new DriveFS
-func NewServer(config *oauth.Config, code string) *Server {
+func NewServer(config *oauth.Config, code string) (*Server, error) {
 	d := &Server{Config: config}
 	// Set up a Transport using the config.
 	transport := &oauth.Transport{Config: config}
@@ -28,8 +28,8 @@ func NewServer(config *oauth.Config, code string) *Server {
 			// ("Please ask the user if I can access this resource.")
 			url := d.Config.AuthCodeURL("")
 			log.Println("Visit this URL to get a code, then run again with -code=YOUR_CODE\n")
-			log.Println(url)
-			return nil
+			log.Fatalln(url)
+
 		}
 		// Exchange the authorization code for an access token.
 		// ("Here's the code you gave the user, now give me a token!")
@@ -48,7 +48,6 @@ func NewServer(config *oauth.Config, code string) *Server {
 	nameToFile = make(map[string]DriveFile)
 	idToDir = make(map[string]DriveDir)
 	idToFile = make(map[string]DriveFile)
-	service, _ = drive.New(client)
-
-	return d
+	service, err = drive.New(client)
+	return d, err
 }

@@ -12,7 +12,7 @@ func main() {
 
 	clientId := "266884823682-qfd1cvgpe2vucokeuhv0qr0bihn87ge4.apps.googleusercontent.com"
 	clientSecret := "6SGgwuVL8KMyFsigaPn2MGBK"
-	scope := "https://www.googleapis.com/auth/buzz"
+	scope := "https://www.googleapis.com/drive/files"
 	redirectURL := "urn:ietf:wg:oauth:2.0:oob"
 	authURL := "https://accounts.google.com/o/oauth2/auth"
 	tokenURL := "https://accounts.google.com/o/oauth2/token"
