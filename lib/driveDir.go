@@ -96,7 +96,6 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 					Name: tmp.File.Title,
 					Type: fuse.DT_Dir,
 				}
-
 			} else {
 				dirs[i] = fuse.Dirent{
 					Name: tmp.File.Title,

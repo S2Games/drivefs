@@ -6,6 +6,7 @@ import (
 	"code.google.com/p/goauth2/oauth"
 	drive "code.google.com/p/google-api-go-client/drive/v2"
 	"log"
+	"time"
 )
 
 // DriveFs is a struct which holds the FUSE filesystem
@@ -66,6 +67,16 @@ func (s *Server) Serve() {
 	if err := fs.Serve(s.conn, Root{}); err != nil {
 		log.Fatalf("Could not serve drivefs %s", err.Error())
 	}
+	refreshFileIndex()
+	refreshDirIndex()
+	// refresh the fileIndex and DirIndex every ten seconds
+	go func() {
+		for {
+			<-time.After(10 * time.Second)
+			go refreshDirIndex()
+			go refreshFileIndex()
+		}
+	}()
 }
 
 // Unmount attempts to unmount the filesystem
