@@ -1,4 +1,4 @@
-package drivefs
+package lib
 
 import (
 	"bazil.org/fuse"

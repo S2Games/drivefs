@@ -1,4 +1,4 @@
-package drivefs
+package lib
 
 import (
 	drive "code.google.com/p/google-api-go-client/drive/v2"
