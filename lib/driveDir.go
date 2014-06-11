@@ -75,14 +75,10 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 		// get list of children
 		// If d is at root, fetch the root children, else fetch this file's children
 		var c *drive.ChildList
-		var cErr error
 		if d.Root {
-			c, cErr = service.Children.List("root").Do()
+			c = childIndex["root"]
 		} else {
-			c, cErr = service.Children.List(d.Dir.Id).Do()
-		}
-		if cErr != nil {
-			log.Println(cErr)
+			c = childIndex[d.Dir.Id]
 		}
 
 		// Get children of this folder
