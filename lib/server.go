@@ -63,19 +63,26 @@ func (s *Server) Mount(mountPoint string) (err error) {
 
 // Serve attempts to serve the filesystem
 func (s *Server) Serve(refreshRate int) {
-	if err := fs.Serve(s.conn, Root{}); err != nil {
-		log.Fatalf("Could not serve drivefs %s", err.Error())
-	}
 	refreshFileIndex()
-	refreshDirIndex()
+	refreshChildIndex()
+	refreshNameToFile()
+	refreshNameToDir()
 	// refresh the fileIndex and DirIndex every ten seconds
 	go func() {
 		for {
 			<-time.After(time.Duration(refreshRate) * time.Second)
-			go refreshDirIndex()
-			go refreshFileIndex()
+			log.Println("Refreshing indexes.")
+			refreshFileIndex()
+			go refreshChildIndex()
+			go refreshNameToFile()
+			go refreshNameToDir()
+
 		}
 	}()
+	if err := fs.Serve(s.conn, Root{}); err != nil {
+		log.Fatalf("Could not serve drivefs %s", err.Error())
+	}
+
 }
 
 // Unmount attempts to unmount the filesystem

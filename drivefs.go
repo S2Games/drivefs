@@ -3,6 +3,7 @@ package main
 import (
 	"bazil.org/fuse/fs/fstestutil"
 	"code.google.com/p/goauth2/oauth"
+	drive "code.google.com/p/google-api-go-client/drive/v2"
 	"flag"
 	"github.com/eliothedeman/drivefs/lib"
 	"log"
@@ -64,7 +65,7 @@ func main() {
 		ClientId:     *clientId,
 		ClientSecret: *clientSecret,
 		RedirectURL:  *redirectURL,
-		Scope:        *scope,
+		Scope:        drive.DriveScope,
 		AuthURL:      *authURL,
 		TokenURL:     *tokenURL,
 		TokenCache:   oauth.CacheFile(*cachefile),

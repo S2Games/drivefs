@@ -5,6 +5,7 @@ import (
 	"bazil.org/fuse/fs"
 	drive "code.google.com/p/google-api-go-client/drive/v2"
 	"log"
+	"os"
 	"strings"
 	"syscall"
 	"time"
@@ -21,7 +22,7 @@ type DriveDir struct {
 // Attr returns the file attributes
 func (DriveDir) Attr() fuse.Attr {
 	return fuse.Attr{
-		Mode: 0644,
+		Mode: os.ModeDir | 0555,
 	}
 }
 
@@ -48,10 +49,13 @@ func (d *DriveDir) Lookup(name string, intr fs.Intr) (fs.Node, fuse.Error) {
 	}
 
 	// Lookup file by name
-	if file, ok := nameToDir[name]; ok {
+	if file, ok := nameToFile[name]; ok {
 		return file, nil
 	}
-
+	if name == ".xdg-volume-info" {
+		root, err := service.Files.Get("root").Do()
+		return DriveDir{Dir: root, Root: true}, err
+	}
 	// File not found
 	return nil, fuse.ENOENT
 }
@@ -82,6 +86,7 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 		}
 
 		// Get children of this folder
+		log.Println(childIndex)
 		children := c.Items
 
 		dirs = make([]fuse.Dirent, len(children))

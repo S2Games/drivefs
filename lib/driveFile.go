@@ -18,21 +18,26 @@ type DriveFile struct {
 }
 
 // Attr returns the file attributes
-func (d *DriveFile) Attr() fuse.Attr {
+func (d DriveFile) Attr() fuse.Attr {
 	return fuse.Attr{
-		Mode:  0644,
+		Mode:  0777,
 		Mtime: time.Now(),
 		Size:  uint64(d.File.FileSize),
 	}
 }
 
 // ReadAll reads an entire file from google drive and returns the resulting bytes
-func (d *DriveFile) ReadAll(intr fs.Intr) ([]byte, fuse.Error) {
+func (d DriveFile) ReadAll(intr fs.Intr) ([]byte, fuse.Error) {
 	byteChan := make(chan *[]byte)
 	errChan := make(chan error)
+	defer func() {
+		close(byteChan)
+		close(errChan)
+	}()
 	// launch read goroutine
 	go func() {
 		// grab file from google drive api
+		log.Println(d.File.Title)
 		b, err := client.Get(d.File.DownloadUrl)
 		if err != nil {
 			log.Println(err)
@@ -50,13 +55,9 @@ func (d *DriveFile) ReadAll(intr fs.Intr) ([]byte, fuse.Error) {
 	// wait for real to be done, or for file system interupt and return values
 	select {
 	case tmp := <-byteChan:
-		close(byteChan)
-		close(errChan)
 		return *tmp, nil
 	case <-intr:
-		close(byteChan)
-		close(errChan)
-		return nil, fuse.EINTR
+		return nil, nil
 	}
 
 }

@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// refresh refreshes the id -> DriveFile pairs it retrieves from the drive api
+// refreshFileIndex refreshes the id -> DriveFile pairs it retrieves from the drive api
 func refreshFileIndex() {
 	// create tmp map to replace fileIndex
 	tmpFileIndex := make(map[string]*drive.File)
@@ -23,8 +23,8 @@ func refreshFileIndex() {
 	fileIndex = tmpFileIndex
 }
 
-// refresh refreshes the id -> pairs it retrives from the drive api
-func refreshDirIndex() {
+// refreshDirIndex refreshes the id -> pairs it retrives from the drive api
+func refreshChildIndex() {
 	// get the file list from the google api
 	f, err := service.Files.List().Do()
 	if err != nil {
@@ -63,4 +63,24 @@ func refreshDirIndex() {
 
 	// replace old index with new
 	childIndex = tmpChildIndex
+}
+
+// refreshNameToFile refreshes the nameToFile lookup map
+func refreshNameToFile() {
+	tmpNameToFile := make(map[string]DriveFile)
+	for _, v := range fileIndex {
+		tmpNameToFile[v.Title] = DriveFile{File: v, Root: false}
+	}
+	nameToFile = tmpNameToFile
+}
+
+// refreshNameToDir refreshes the nameToDir lookup map
+func refreshNameToDir() {
+	tmpNameToDir := make(map[string]DriveDir)
+	for _, v := range fileIndex {
+		if strings.Contains(v.MimeType, "folder") {
+			tmpNameToDir[v.Title] = DriveDir{Dir: v}
+		}
+	}
+	nameToDir = tmpNameToDir
 }
