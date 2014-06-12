@@ -29,7 +29,7 @@ var (
 
 // Exists checks if a file or directory exists on disk
 func Exists(fileName string) bool {
-	if a, err := os.Stat(fileName); err != nil {
+	if a, err := os.Stat(fileName); os.IsNotExist(err) {
 		return false
 	} else {
 		log.Println(a)
