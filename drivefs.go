@@ -49,6 +49,9 @@ func main() {
 		}
 	}
 	// if the mountpoint given does not exist, make it
+	if *mountpoint == "" {
+		log.Fatal("Must provide mountpoint via argument -mount")
+	}
 	if !Exists(*mountpoint) {
 		log.Println(*mountpoint)
 		err := os.Mkdir(*mountpoint, 0777)
@@ -72,12 +75,9 @@ func main() {
 		log.Fatal(err)
 	}
 	// Attempt to mount the filesystem, fail if mountpoint is not given
-	if *mountpoint == "" {
-		log.Fatal("Must provide mountpoint via argument -mount")
-	}
 	err = server.Mount(*mountpoint)
 	if err != nil {
-		log.Println(err)
+		log.Fatalln(err)
 	}
 	// Start the server
 	go server.Serve(10)
