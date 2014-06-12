@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bazil.org/fuse/fs/fstestutil"
 	"code.google.com/p/goauth2/oauth"
 	"flag"
 	"github.com/eliothedeman/drivefs/lib"
@@ -36,6 +37,7 @@ func Exists(fileName string) bool {
 	}
 }
 func main() {
+	fstestutil.DebugByDefault()
 	flag.Parse()
 	// if the cache file does not exists, create it
 	if !Exists(*cachefile) {
