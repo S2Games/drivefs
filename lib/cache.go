@@ -16,10 +16,6 @@ func refreshFileIndex() {
 		log.Println(err)
 		return
 	}
-	// wipe the indexCache
-	for k, _ := range tmpFileIndex {
-		delete(tmpFileIndex, k)
-	}
 	list := f.Items
 	for i := range list {
 		tmpFileIndex[list[i].Id] = list[i]
