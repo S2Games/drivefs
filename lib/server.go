@@ -76,13 +76,11 @@ func (s *Server) Serve(refreshRate int) {
 			go refreshChildIndex()
 			go refreshNameToFile()
 			go refreshNameToDir()
-
 		}
 	}()
 	if err := fs.Serve(s.conn, Root{}); err != nil {
 		log.Fatalf("Could not serve drivefs %s", err.Error())
 	}
-
 }
 
 // Unmount attempts to unmount the filesystem
