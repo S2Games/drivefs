@@ -122,7 +122,13 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 
 // Mkdir does nothing, because drivefs is read-only
 func (d *DriveDir) Mkdir(req *fuse.MkdirRequest, intr fs.Intr) (fs.Node, fuse.Error) {
-	return nil, fuse.Errno(syscall.EROFS)
+	f := &drive.File{Title: req.Name, MimeType: "application/vnd.google-apps.folder"}
+	newDir, err := service.Files.Insert(f).Do()
+	if err != nil {
+		log.Println(err)
+		return nil, fuse.Errno(syscall.EROFS)
+	}
+	return DriveDir{Dir: newDir, Root: false}, nil
 }
 
 // Mknod does nothing, because drivefs is read-only
