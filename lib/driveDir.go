@@ -52,9 +52,11 @@ func (d *DriveDir) Lookup(name string, intr fs.Intr) (fs.Node, fuse.Error) {
 	if file, ok := nameToFile[name]; ok {
 		return file, nil
 	}
+	// This comes up as the node id for first access, so just show the root folder
 	if name == ".xdg-volume-info" {
-		root, err := service.Files.Get("root").Do()
-		return DriveDir{Dir: root, Root: true}, err
+		if dir, ok := nameToDir["root"]; ok {
+			return dir, nil
+		}
 	}
 	// File not found
 	return nil, fuse.ENOENT
@@ -118,17 +120,6 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 		return nil, fuse.EINTR
 	}
 
-}
-
-// Mkdir does nothing, because drivefs is read-only
-func (d *DriveDir) Mkdir(req *fuse.MkdirRequest, intr fs.Intr) (fs.Node, fuse.Error) {
-	f := &drive.File{Title: req.Name, MimeType: "application/vnd.google-apps.folder"}
-	newDir, err := service.Files.Insert(f).Do()
-	if err != nil {
-		log.Println(err)
-		return nil, fuse.Errno(syscall.EROFS)
-	}
-	return DriveDir{Dir: newDir, Root: false}, nil
 }
 
 // Mknod does nothing, because drivefs is read-only
