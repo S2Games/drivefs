@@ -26,12 +26,32 @@ var (
 	mountpoint = flag.String("mount", "", "Mount point for drivefs")
 )
 
+// Exists checks if a file or directory exists on disk
+func Exists(fileName string) bool {
+	if a, err := os.Stat(fileName); err != nil {
+		return false
+	} else {
+		log.Println(a)
+		return true
+	}
+}
 func main() {
 	flag.Parse()
-	if _, err := os.Stat(*cachefile); err != nil {
+	// if the cache file does not exists, create it
+	if !Exists(*cachefile) {
 		f, err := os.Create(*cachefile)
 		if err == nil {
 			f.Close()
+		} else {
+			log.Fatal("CacheFile: ", err)
+		}
+	}
+	// if the mountpoint given does not exist, make it
+	if !Exists(*mountpoint) {
+		log.Println(*mountpoint)
+		err := os.Mkdir(*mountpoint, 0777)
+		if err != nil {
+			log.Fatal("Mountpoint: ", err)
 		}
 	}
 	// Set up a configuration.
