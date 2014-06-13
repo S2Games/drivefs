@@ -50,6 +50,7 @@ func (d *DriveDir) Create(req *fuse.CreateRequest, res *fuse.CreateResponse, int
 	idToFile[f.File.Id] = f
 	fileIndex[f.File.Id] = f.File
 	idToTmpFile[f.File.Id] = path
+	refreshAll()
 
 	return f, f, nil
 }
@@ -76,6 +77,7 @@ func (d *DriveDir) Lookup(name string, intr fs.Intr) (fs.Node, fuse.Error) {
 			return dir, nil
 		}
 	}
+	addFile(name)
 	// File not found
 	return nil, fuse.ENOENT
 }
@@ -193,6 +195,7 @@ func (d *DriveDir) Rename(req *fuse.RenameRequest, node fs.Node, intr fs.Intr) f
 
 // Setattr does nothing, because drivefs is read-only
 func (d *DriveDir) Setattr(req *fuse.SetattrRequest, res *fuse.SetattrResponse, intr fs.Intr) fuse.Error {
+	log.Println("\n\n\n\n\n\n")
 	return fuse.Errno(syscall.EROFS)
 }
 
@@ -204,4 +207,49 @@ func (d *DriveDir) Setxattr(req *fuse.SetxattrRequest, intr fs.Intr) fuse.Error 
 // Symlink does nothing, because drivefs is read-only
 func (d *DriveDir) Symlink(req *fuse.SymlinkRequest, intr fs.Intr) (fs.Node, fuse.Error) {
 	return nil, fuse.Errno(syscall.EROFS)
+}
+
+// Write writes bytes to a tmp file, which are then synced by FSync
+func (d *DriveDir) Write(req *fuse.WriteRequest, resp *fuse.WriteResponse, intr fs.Intr) fuse.Error {
+	var size int
+	// check if d already has a tmp file
+	if path, ok := idToTmpFile[d.Dir.Id]; ok {
+		f, err := os.Open(path)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		size, err = f.Write(req.Data)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		return f.Close()
+	}
+	// If d does not have a tmp file, create one and write to it
+	path := "/tmp/" + d.Dir.Title
+	f, err := os.Create(path)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	size, err = f.Write(req.Data)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	// add d's tmp file to the lookup map
+	idToTmpFile[d.Dir.Id] = path
+	resp.Size = size
+	return f.Close()
+
+}
+
+func addFile(name string) DriveFile {
+	f := &drive.File{Title: name}
+	newFile, err := service.Files.Insert(f).Media(&os.File{}).Do()
+	if err != nil {
+		log.Println(err)
+	}
+	return DriveFile{File: newFile, Root: false}
 }
