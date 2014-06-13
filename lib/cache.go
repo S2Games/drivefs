@@ -84,3 +84,10 @@ func refreshNameToDir() {
 	}
 	nameToDir = tmpNameToDir
 }
+
+func refreshAll() {
+	refreshFileIndex()
+	refreshChildIndex()
+	refreshNameToFile()
+	refreshNameToDir()
+}
