@@ -26,7 +26,7 @@ func (DriveDir) Attr() fuse.Attr {
 	}
 }
 
-// TODO implement create function to actually create file
+// Create creates an empty file inside of d
 func (d *DriveDir) Create(req *fuse.CreateRequest, res *fuse.CreateResponse, intr fs.Intr) (fs.Node, fs.Handle, fuse.Error) {
 	newFile := &drive.File{}
 	newFile.Title = req.Name
