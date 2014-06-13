@@ -54,12 +54,6 @@ func (d *DriveDir) Create(req *fuse.CreateRequest, res *fuse.CreateResponse, int
 	return f, f, nil
 }
 
-// TODO implement fsync function to actually perform an fsync
-func (d *DriveDir) Fsync(req *fuse.FsyncRequest, intr fs.Intr) fuse.Error {
-
-	return fuse.Errno(syscall.EROFS)
-}
-
 // TODO implement link function to actually perform a link
 func (DriveDir) Link(req *fuse.LinkRequest, node fs.Node, intr fs.Intr) (fs.Node, fuse.Error) {
 	return nil, fuse.Errno(syscall.EROFS)
@@ -179,9 +173,22 @@ func (d *DriveDir) Removexattr(req *fuse.RemovexattrRequest, intr fs.Intr) fuse.
 	return fuse.Errno(syscall.EROFS)
 }
 
-// Rename does nothing, because drivefs is read-only
+// Rename a file in d
 func (d *DriveDir) Rename(req *fuse.RenameRequest, node fs.Node, intr fs.Intr) fuse.Error {
-	return fuse.Errno(syscall.EROFS)
+	// copy the file on google drive to the new name
+	_, err := service.Files.Copy(nameToFile[req.OldName].File.Id, &drive.File{Title: req.NewName}).Do()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	err = service.Files.Delete(nameToFile[req.OldName].File.Id).Do()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	go refreshAll()
+	return nil
 }
 
 // Setattr does nothing, because drivefs is read-only
