@@ -6,12 +6,14 @@ import (
 	drive "code.google.com/p/google-api-go-client/drive/v2"
 	"io/ioutil"
 	"log"
+	"os"
 	"time"
 )
 
 // DriveFile represents a file in google drive
 type DriveFile struct {
 	File     *drive.File
+	TmpFile  *os.File
 	Modified time.Time
 	Created  time.Time
 	Root     bool

@@ -27,12 +27,31 @@ func (DriveDir) Attr() fuse.Attr {
 }
 
 // TODO implement create function to actually create file
-func (DriveDir) Create(req *fuse.CreateRequest, res *fuse.CreateResponse, intr fs.Intr) (fs.Node, fs.Handle, fuse.Error) {
-	return nil, nil, fuse.Errno(syscall.EROFS)
+func (d *DriveDir) Create(req *fuse.CreateRequest, res *fuse.CreateResponse, intr fs.Intr) (fs.Node, fs.Handle, fuse.Error) {
+	newFile := &drive.File{}
+	newFile.Title = req.Name
+	// create temporary file to serve as the cache until the data is uploaded
+	tmpFile, err := os.Create("/tmp/" + string(req.ID))
+	if err != nil {
+		log.Println(err)
+		return nil, nil, err
+	}
+	newFile, err1 := service.Files.Insert(newFile).Media(tmpFile).Do()
+	if err1 != nil {
+		log.Println(err1)
+		return nil, nil, err1
+	}
+	f := DriveFile{File: newFile, Root: false}
+	// add the new file to the cach/index
+	nameToFile[f.File.Title] = f
+	idToFile[f.File.Id] = f
+	fileIndex[f.File.Id] = f.File
+
+	return f, f, nil
 }
 
 // TODO implement fsync function to actually perform an fsync
-func (DriveDir) Fsync(req *fuse.FsyncRequest, intr fs.Intr) fuse.Error {
+func (d *DriveDir) Fsync(req *fuse.FsyncRequest, intr fs.Intr) fuse.Error {
 	return fuse.Errno(syscall.EROFS)
 }
 
@@ -120,6 +139,17 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 		return nil, fuse.EINTR
 	}
 
+}
+
+// Mkdir registers a new directory
+func (d *DriveDir) Mkdir(req *fuse.MkdirRequest, intr fs.Intr) (fs.Node, fuse.Error) {
+	f := &drive.File{Title: req.Name, MimeType: "application/vnd.google-apps.folder"}
+	newDir, err := service.Files.Insert(f).Do()
+	if err != nil {
+		log.Println(err)
+		return nil, fuse.Errno(syscall.EROFS)
+	}
+	return DriveDir{Dir: newDir, Root: false}, nil
 }
 
 // Mknod does nothing, because drivefs is read-only
