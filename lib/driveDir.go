@@ -41,6 +41,8 @@ func (d *DriveDir) Create(req *fuse.CreateRequest, res *fuse.CreateResponse, int
 		log.Println(err1)
 		return nil, nil, err1
 	}
+	// update d's child index
+	go refreshChildIndex()
 	f := DriveFile{File: newFile, Root: false}
 	// add the new file to the cach/index
 	nameToFile[f.File.Title] = f
