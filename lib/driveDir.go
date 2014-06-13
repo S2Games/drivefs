@@ -31,7 +31,8 @@ func (d *DriveDir) Create(req *fuse.CreateRequest, res *fuse.CreateResponse, int
 	newFile := &drive.File{}
 	newFile.Title = req.Name
 	// create temporary file to serve as the cache until the data is uploaded
-	tmpFile, err := os.Create("/tmp/" + string(req.ID))
+	path := "/tmp/" + req.Name
+	tmpFile, err := os.Create(path)
 	if err != nil {
 		log.Println(err)
 		return nil, nil, err
@@ -48,12 +49,14 @@ func (d *DriveDir) Create(req *fuse.CreateRequest, res *fuse.CreateResponse, int
 	nameToFile[f.File.Title] = f
 	idToFile[f.File.Id] = f
 	fileIndex[f.File.Id] = f.File
+	idToTmpFile[f.File.Id] = path
 
 	return f, f, nil
 }
 
 // TODO implement fsync function to actually perform an fsync
 func (d *DriveDir) Fsync(req *fuse.FsyncRequest, intr fs.Intr) fuse.Error {
+
 	return fuse.Errno(syscall.EROFS)
 }
 
@@ -159,9 +162,16 @@ func (d *DriveDir) Mknod(req *fuse.MknodRequest, intr fs.Intr) (fs.Node, fuse.Er
 	return nil, fuse.Errno(syscall.EROFS)
 }
 
-// Remove does nothing, because drivefs is read-only
+// Remove deletes a fild or folder from google drive
 func (d *DriveDir) Remove(req *fuse.RemoveRequest, intr fs.Intr) fuse.Error {
-	return fuse.Errno(syscall.EROFS)
+	if file, ok := nameToFile[req.Name]; ok {
+		err := service.Files.Delete(file.File.Id).Do()
+		if err != nil {
+			log.Println(err)
+		}
+		return err
+	}
+	return fuse.ENODATA
 }
 
 // Removexattr does nothing, because drivefs is read-only
