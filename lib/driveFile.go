@@ -75,7 +75,6 @@ func (d *DriveFile) Setattr(req *fuse.SetattrRequest, resp *fuse.SetattrResponse
 
 // Write writes bytes to a tmp file, which are then synced by FSync
 func (d *DriveFile) Write(req *fuse.WriteRequest, resp *fuse.WriteResponse, intr fs.Intr) fuse.Error {
-	log.Println("hereererrrrrrrr\n\n\n")
 	var size int
 	// check if d already has a tmp file
 	if path, ok := idToTmpFile[d.File.Id]; ok {
@@ -112,7 +111,6 @@ func (d *DriveFile) Write(req *fuse.WriteRequest, resp *fuse.WriteResponse, intr
 
 // Open a file or directory
 func (d *DriveFile) Open(req *fuse.OpenRequest, resp *fuse.OpenResponse, intr fs.Intr) (fs.Handle, fuse.Error) {
-	log.Println("hereererrrrrrrr\n\n\n")
 	// If d does not have a tmp file, create one and write to it
 	path := "/tmp/" + d.File.Id
 	f, err := os.Create(path)
