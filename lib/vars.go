@@ -11,16 +11,16 @@ var (
 	client *http.Client
 
 	// nameToDir maps a directory name to its DriveDir
-	nameToDir map[string]DriveDir
+	nameToDir map[string]*DriveDir
 
 	// nameToFile maps a file name to its DriveFile
-	nameToFile map[string]DriveFile
+	nameToFile map[string]*DriveFile
 
 	// idToDir maps a directory name to its DriveDir
-	idToDir map[string]DriveDir
+	idToDir map[string]*DriveDir
 
 	// idToFile maps a file name to its DriveFile
-	idToFile map[string]DriveFile
+	idToFile map[string]*DriveFile
 	// idToTmpFile mapes a file id to the disk path of an os.File
 	idToTmpFile map[string]string
 

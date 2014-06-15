@@ -46,7 +46,7 @@ func (d *DriveDir) Create(req *fuse.CreateRequest, res *fuse.CreateResponse, int
 	}
 	// update d's child index
 
-	f := DriveFile{File: createdFile, Root: false, TmpFile: tmpFile}
+	f := &DriveFile{File: createdFile, Root: false, TmpFile: tmpFile}
 	// add the new file to the cach/index
 	nameToFile[f.File.Title] = f
 	idToFile[f.File.Id] = f
@@ -91,7 +91,7 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 		fileList := f.Items
 		// Populate idToFile with new ids
 		for i := range fileList {
-			idToFile[fileList[i].Id] = DriveFile{File: fileList[i], Root: false}
+			idToFile[fileList[i].Id] = &DriveFile{File: fileList[i], Root: false}
 		}
 		// get list of children
 		// If d is at root, fetch the root children, else fetch this file's children

@@ -48,10 +48,10 @@ func NewServer(config *oauth.Config, code string) (*Server, error) {
 
 	// initialize global vars
 	client = transport.Client()
-	nameToDir = make(map[string]DriveDir)
-	nameToFile = make(map[string]DriveFile)
-	idToDir = make(map[string]DriveDir)
-	idToFile = make(map[string]DriveFile)
+	nameToDir = make(map[string]*DriveDir)
+	nameToFile = make(map[string]*DriveFile)
+	idToDir = make(map[string]*DriveDir)
+	idToFile = make(map[string]*DriveFile)
 	idToTmpFile = make(map[string]string)
 	service, err = drive.New(client)
 	return d, err

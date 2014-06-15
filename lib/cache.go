@@ -67,19 +67,19 @@ func refreshChildIndex() {
 
 // refreshNameToFile refreshes the nameToFile lookup map
 func refreshNameToFile() {
-	tmpNameToFile := make(map[string]DriveFile)
+	tmpNameToFile := make(map[string]*DriveFile)
 	for _, v := range fileIndex {
-		tmpNameToFile[v.Title] = DriveFile{File: v, Root: false}
+		tmpNameToFile[v.Title] = &DriveFile{File: v, Root: false}
 	}
 	nameToFile = tmpNameToFile
 }
 
 // refreshNameToDir refreshes the nameToDir lookup map
 func refreshNameToDir() {
-	tmpNameToDir := make(map[string]DriveDir)
+	tmpNameToDir := make(map[string]*DriveDir)
 	for _, v := range fileIndex {
 		if strings.Contains(v.MimeType, "folder") {
-			tmpNameToDir[v.Title] = DriveDir{Dir: v}
+			tmpNameToDir[v.Title] = &DriveDir{Dir: v}
 		}
 	}
 	nameToDir = tmpNameToDir
