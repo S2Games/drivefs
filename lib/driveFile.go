@@ -54,12 +54,93 @@ func (d DriveFile) ReadAll(intr fs.Intr) ([]byte, fuse.Error) {
 		}
 		byteChan <- &c
 	}()
-	// wait for real to be done, or for file system interupt and return values
+	// wait for read to be done, or for file system interupt and return values
 	select {
 	case tmp := <-byteChan:
 		return *tmp, nil
 	case <-intr:
 		return nil, nil
 	}
+
+}
+
+// Setattr sets file attributs
+func (d *DriveFile) Setattr(req *fuse.SetattrRequest, resp *fuse.SetattrResponse, intr fs.Intr) fuse.Error {
+	valid := req.Valid
+	if valid.Size() {
+		return nil
+	}
+	return nil
+}
+
+// Write writes bytes to a tmp file, which are then synced by FSync
+func (d *DriveFile) Write(req *fuse.WriteRequest, resp *fuse.WriteResponse, intr fs.Intr) fuse.Error {
+	log.Println("hereererrrrrrrr\n\n\n")
+	var size int
+	// check if d already has a tmp file
+	if path, ok := idToTmpFile[d.File.Id]; ok {
+		f, err := os.Open(path)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		size, err = f.Write(req.Data)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		return f.Close()
+	}
+	// If d does not have a tmp file, create one and write to it
+	path := "/tmp/" + d.File.Title
+	f, err := os.Create(path)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	size, err = f.Write(req.Data)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	// add d's tmp file to the lookup map
+	idToTmpFile[d.File.Id] = path
+	resp.Size = size
+	return f.Close()
+
+}
+
+// Open a file or directory
+func (d *DriveFile) Open(req *fuse.OpenRequest, resp *fuse.OpenResponse, intr fs.Intr) (fs.Handle, fuse.Error) {
+	log.Println("hereererrrrrrrr\n\n\n")
+	// If d does not have a tmp file, create one and write to it
+	path := "/tmp/" + d.File.Id
+	f, err := os.Create(path)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	// add d's tmp file to the lookup map
+	idToTmpFile[d.File.Id] = path
+	resp.Flags &^= fuse.OpenDirectIO
+	return d, f.Close()
+}
+
+// Flush a file tmp to google drive
+func (d *DriveFile) Flush(req *fuse.FlushRequest, intr fs.Intr) fuse.Error {
+	log.Println("Flushing: ", d.TmpFile.Name())
+	// sync file to disk
+	err := d.TmpFile.Sync()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	// upload file to google drive
+	d.File, err = service.Files.Update(d.File.Id, d.File).Media(d.TmpFile).Do()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
 
 }

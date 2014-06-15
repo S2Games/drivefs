@@ -30,6 +30,8 @@ func (DriveDir) Attr() fuse.Attr {
 func (d *DriveDir) Create(req *fuse.CreateRequest, res *fuse.CreateResponse, intr fs.Intr) (fs.Node, fs.Handle, fuse.Error) {
 	newFile := &drive.File{}
 	newFile.Title = req.Name
+	p := &drive.ParentReference{Id: d.Dir.Id}
+	newFile.Parents = []*drive.ParentReference{p}
 	// create temporary file to serve as the cache until the data is uploaded
 	path := "/tmp/" + req.Name
 	tmpFile, err := os.Create(path)
@@ -37,14 +39,14 @@ func (d *DriveDir) Create(req *fuse.CreateRequest, res *fuse.CreateResponse, int
 		log.Println(err)
 		return nil, nil, err
 	}
-	newFile, err1 := service.Files.Insert(newFile).Media(tmpFile).Do()
+	createdFile, err1 := service.Files.Insert(newFile).Media(tmpFile).Do()
 	if err1 != nil {
 		log.Println(err1)
 		return nil, nil, err1
 	}
 	// update d's child index
-	go refreshChildIndex()
-	f := DriveFile{File: newFile, Root: false}
+
+	f := DriveFile{File: createdFile, Root: false, TmpFile: tmpFile}
 	// add the new file to the cach/index
 	nameToFile[f.File.Title] = f
 	idToFile[f.File.Id] = f
@@ -52,11 +54,6 @@ func (d *DriveDir) Create(req *fuse.CreateRequest, res *fuse.CreateResponse, int
 	idToTmpFile[f.File.Id] = path
 
 	return f, f, nil
-}
-
-// TODO implement link function to actually perform a link
-func (DriveDir) Link(req *fuse.LinkRequest, node fs.Node, intr fs.Intr) (fs.Node, fuse.Error) {
-	return nil, fuse.Errno(syscall.EROFS)
 }
 
 // Lookup scans the current directory for matching files or directories
@@ -106,7 +103,6 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 		}
 
 		// Get children of this folder
-		log.Println(childIndex)
 		children := c.Items
 
 		dirs = make([]fuse.Dirent, len(children))
@@ -151,11 +147,6 @@ func (d *DriveDir) Mkdir(req *fuse.MkdirRequest, intr fs.Intr) (fs.Node, fuse.Er
 	return DriveDir{Dir: newDir, Root: false}, nil
 }
 
-// Mknod does nothing, because drivefs is read-only
-func (d *DriveDir) Mknod(req *fuse.MknodRequest, intr fs.Intr) (fs.Node, fuse.Error) {
-	return nil, fuse.Errno(syscall.EROFS)
-}
-
 // Remove deletes a fild or folder from google drive
 func (d *DriveDir) Remove(req *fuse.RemoveRequest, intr fs.Intr) fuse.Error {
 	if file, ok := nameToFile[req.Name]; ok {
@@ -166,11 +157,6 @@ func (d *DriveDir) Remove(req *fuse.RemoveRequest, intr fs.Intr) fuse.Error {
 		return err
 	}
 	return fuse.ENODATA
-}
-
-// Removexattr does nothing, because drivefs is read-only
-func (d *DriveDir) Removexattr(req *fuse.RemovexattrRequest, intr fs.Intr) fuse.Error {
-	return fuse.Errno(syscall.EROFS)
 }
 
 // Rename a file in d
@@ -189,19 +175,4 @@ func (d *DriveDir) Rename(req *fuse.RenameRequest, node fs.Node, intr fs.Intr) f
 
 	go refreshAll()
 	return nil
-}
-
-// Setattr does nothing, because drivefs is read-only
-func (d *DriveDir) Setattr(req *fuse.SetattrRequest, res *fuse.SetattrResponse, intr fs.Intr) fuse.Error {
-	return fuse.Errno(syscall.EROFS)
-}
-
-// Setxattr does nothing, because drivefs is read-only
-func (d *DriveDir) Setxattr(req *fuse.SetxattrRequest, intr fs.Intr) fuse.Error {
-	return fuse.Errno(syscall.EROFS)
-}
-
-// Symlink does nothing, because drivefs is read-only
-func (d *DriveDir) Symlink(req *fuse.SymlinkRequest, intr fs.Intr) (fs.Node, fuse.Error) {
-	return nil, fuse.Errno(syscall.EROFS)
 }
