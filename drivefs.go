@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bazil.org/fuse/fs/fstestutil"
 	"code.google.com/p/goauth2/oauth"
 	drive "code.google.com/p/google-api-go-client/drive/v2"
 	"flag"
@@ -26,6 +27,8 @@ var (
 	// Filesystem options
 	mountpoint = flag.String("mount", "", "Mount point for drivefs")
 	refresh    = flag.Int("refresh", 10, "Rate at which to refresh if local file system has not changed.")
+	// Debugging options
+	m fstestutil.Mount
 )
 
 // Exists checks if a file or directory exists on disk
