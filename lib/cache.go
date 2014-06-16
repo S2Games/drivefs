@@ -4,6 +4,7 @@ import (
 	drive "code.google.com/p/google-api-go-client/drive/v2"
 	"log"
 	"strings"
+	"sync"
 )
 
 // refreshFileIndex refreshes the id -> DriveFile pairs it retrieves from the drive api
@@ -69,7 +70,7 @@ func refreshChildIndex() {
 func refreshNameToFile() {
 	tmpNameToFile := make(map[string]*DriveFile)
 	for _, v := range fileIndex {
-		tmpNameToFile[v.Title] = &DriveFile{File: v, Root: false}
+		tmpNameToFile[v.Title] = &DriveFile{File: v, Root: false, Mutex: new(sync.Mutex)}
 	}
 	nameToFile = tmpNameToFile
 }
@@ -79,7 +80,7 @@ func refreshNameToDir() {
 	tmpNameToDir := make(map[string]*DriveDir)
 	for _, v := range fileIndex {
 		if strings.Contains(v.MimeType, "folder") {
-			tmpNameToDir[v.Title] = &DriveDir{Dir: v}
+			tmpNameToDir[v.Title] = &DriveDir{Dir: v, Root: false}
 		}
 	}
 	nameToDir = tmpNameToDir

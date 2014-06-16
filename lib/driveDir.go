@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -44,9 +45,9 @@ func (d *DriveDir) Create(req *fuse.CreateRequest, res *fuse.CreateResponse, int
 		log.Println(err1)
 		return nil, nil, err1
 	}
-	// update d's child index
-
-	f := &DriveFile{File: createdFile, Root: false, TmpFile: tmpFile}
+	os.Remove(path)
+	tmpFile, err = os.Create("/tmp/drivefs-" + createdFile.Id)
+	f := &DriveFile{File: createdFile, Root: false, TmpFile: tmpFile, Mutex: new(sync.Mutex)}
 	// add the new file to the cach/index
 	nameToFile[f.File.Title] = f
 	idToFile[f.File.Id] = f
@@ -93,7 +94,7 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 		fileList := f.Items
 		// Populate idToFile with new ids
 		for i := range fileList {
-			idToFile[fileList[i].Id] = &DriveFile{File: fileList[i], Root: false}
+			idToFile[fileList[i].Id] = &DriveFile{File: fileList[i], Root: false, Mutex: new(sync.Mutex)}
 		}
 		// get list of children
 		// If d is at root, fetch the root children, else fetch this file's children
