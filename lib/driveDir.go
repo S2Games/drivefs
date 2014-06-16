@@ -33,7 +33,7 @@ func (d *DriveDir) Create(req *fuse.CreateRequest, res *fuse.CreateResponse, int
 	p := &drive.ParentReference{Id: d.Dir.Id}
 	newFile.Parents = []*drive.ParentReference{p}
 	// create temporary file to serve as the cache until the data is uploaded
-	path := "/tmp/" + req.Name
+	path := "/tmp/drivefs-" + req.Name
 	tmpFile, err := os.Create(path)
 	if err != nil {
 		log.Println(err)
@@ -51,7 +51,6 @@ func (d *DriveDir) Create(req *fuse.CreateRequest, res *fuse.CreateResponse, int
 	nameToFile[f.File.Title] = f
 	idToFile[f.File.Id] = f
 	fileIndex[f.File.Id] = f.File
-	idToTmpFile[f.File.Id] = path
 
 	return f, f, nil
 }

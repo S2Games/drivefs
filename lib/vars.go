@@ -21,8 +21,6 @@ var (
 
 	// idToFile maps a file name to its DriveFile
 	idToFile map[string]*DriveFile
-	// idToTmpFile mapes a file id to the disk path of an os.File
-	idToTmpFile map[string]string
 
 	// service is a google drive service
 	service *drive.Service

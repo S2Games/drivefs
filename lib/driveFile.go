@@ -75,53 +75,30 @@ func (d *DriveFile) Setattr(req *fuse.SetattrRequest, resp *fuse.SetattrResponse
 
 // Write writes bytes to a tmp file, which are then synced by FSync
 func (d *DriveFile) Write(req *fuse.WriteRequest, resp *fuse.WriteResponse, intr fs.Intr) fuse.Error {
-	var size int
 	// check if d already has a tmp file
-	if path, ok := idToTmpFile[d.File.Id]; ok {
-		f, err := os.Open(path)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		size, err = f.Write(req.Data)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		return f.Close()
-	}
 	// If d does not have a tmp file, create one and write to it
-	path := "/tmp/" + d.File.Title
-	f, err := os.Create(path)
+	log.Println(string(req.Data))
+	size, err := d.TmpFile.Write(req.Data)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	size, err = f.Write(req.Data)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-	// add d's tmp file to the lookup map
-	idToTmpFile[d.File.Id] = path
 	resp.Size = size
-	return f.Close()
+	return nil
 
 }
 
 // Open a file or directory
 func (d *DriveFile) Open(req *fuse.OpenRequest, resp *fuse.OpenResponse, intr fs.Intr) (fs.Handle, fuse.Error) {
-	// If d does not have a tmp file, create one and write to it
-	path := "/tmp/" + d.File.Id
-	f, err := os.Create(path)
+	d.TmpFile.Close()
+	f, err := os.Create("/tmp/drivefs-" + d.File.Id)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
-	// add d's tmp file to the lookup map
-	idToTmpFile[d.File.Id] = path
+	d.TmpFile = f
+
 	resp.Flags &^= fuse.OpenDirectIO
-	return d, f.Close()
+	return d, nil
 }
 
 // Flush a file tmp to google drive
@@ -133,12 +110,29 @@ func (d *DriveFile) Flush(req *fuse.FlushRequest, intr fs.Intr) fuse.Error {
 		log.Println(err)
 		return err
 	}
+	d.TmpFile.Close()
+	d.TmpFile, err = os.Open(d.TmpFile.Name())
+	if err != nil {
+		log.Println(err)
+	}
 	// upload file to google drive
+	log.Println("before")
 	d.File, err = service.Files.Update(d.File.Id, d.File).Media(d.TmpFile).Do()
+	log.Println("after")
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	return nil
+	return os.Remove(d.TmpFile.Name())
 
+}
+
+// exists checks if a file or directory exists on disk
+func exists(fileName string) bool {
+	if a, err := os.Stat(fileName); os.IsNotExist(err) {
+		return false
+	} else {
+		log.Println(a)
+		return true
+	}
 }

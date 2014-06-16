@@ -6,7 +6,6 @@ import (
 	"code.google.com/p/goauth2/oauth"
 	drive "code.google.com/p/google-api-go-client/drive/v2"
 	"log"
-	"os"
 	"time"
 )
 
@@ -52,7 +51,6 @@ func NewServer(config *oauth.Config, code string) (*Server, error) {
 	nameToFile = make(map[string]*DriveFile)
 	idToDir = make(map[string]*DriveDir)
 	idToFile = make(map[string]*DriveFile)
-	idToTmpFile = make(map[string]string)
 	service, err = drive.New(client)
 	return d, err
 }
@@ -99,13 +97,6 @@ func (s *Server) Unmount(mountPoint string, timeout int) (err error) {
 		log.Println(err)
 	}
 
-	// delete tmp files
-	for _, val := range idToTmpFile {
-		err := os.Remove(val)
-		if err != nil {
-			log.Println(err)
-		}
-	}
 	err = s.conn.Close()
 	return err
 
