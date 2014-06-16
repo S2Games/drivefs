@@ -26,6 +26,7 @@ var (
 	cachefile    = flag.String("cache", "cache.json", "Token cache file")
 	// Filesystem options
 	mountpoint = flag.String("mount", "", "Mount point for drivefs")
+	refresh    = flag.Int("refresh", 10, "Rate at which to refresh if local file system has not changed.")
 )
 
 // Exists checks if a file or directory exists on disk
@@ -81,7 +82,7 @@ func main() {
 		log.Fatalln(err)
 	}
 	// Start the server
-	go server.Serve(10)
+	go server.Serve(*refresh)
 
 	// wait for a termination before exit
 	killChan := make(chan os.Signal)
