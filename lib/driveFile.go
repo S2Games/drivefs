@@ -115,12 +115,31 @@ func (d *DriveFile) Flush(req *fuse.FlushRequest, intr fs.Intr) fuse.Error {
 		log.Println(err)
 	}
 	// upload file to google drive
-	d.File, err = service.Files.Update(d.File.Id, d.File).Media(d.TmpFile).Do()
-	if err != nil {
-		log.Println(err)
+	// this is done in another go routine to catch interupts
+	errChan := make(chan error)
+	fileChan := make(chan *drive.File)
+	go func() {
+		f, err := service.Files.Update(d.File.Id, d.File).Media(d.TmpFile).Do()
+		if err != nil {
+			errChan <- err
+			return
+		}
+		fileChan <- f
+		return
+	}()
+	// wait for interupt while uploading file
+	select {
+	// if all goes well, set new file and return
+	case f := <-fileChan:
+		d.File = f
+		return os.Remove(d.TmpFile.Name())
+	case err := <-errChan:
+		os.Remove(d.TmpFile.Name())
 		return err
+	// catch interupt
+	case <-intr:
+		return fuse.EINTR
 	}
-	return os.Remove(d.TmpFile.Name())
 
 }
 
