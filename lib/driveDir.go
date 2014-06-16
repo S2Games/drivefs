@@ -86,6 +86,7 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 		f, err := service.Files.List().Do()
 		if err != nil {
 			log.Println(err)
+			return nil, err
 		}
 		fileList := f.Items
 		// Populate idToFile with new ids
@@ -173,5 +174,10 @@ func (d *DriveDir) Rename(req *fuse.RenameRequest, node fs.Node, intr fs.Intr) f
 	}
 
 	go refreshAll()
+	return nil
+}
+
+// FSync is a place holder and does nothing but satisfyes the FSyncer interface
+func (d *DriveDir) Fsync(req *fuse.FsyncRequest, intr fs.Intr) fuse.Error {
 	return nil
 }
