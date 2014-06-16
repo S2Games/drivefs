@@ -79,6 +79,7 @@ func (d *DriveDir) Lookup(name string, intr fs.Intr) (fs.Node, fuse.Error) {
 // ReadDir return a slice of directory entries
 func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 	dirChan := make(chan *[]fuse.Dirent)
+	errChan := make(chan error)
 	go func() {
 		// List of directories to return
 		var dirs []fuse.Dirent
@@ -86,7 +87,8 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 		f, err := service.Files.List().Do()
 		if err != nil {
 			log.Println(err)
-			return nil, err
+			errChan <- err
+			return
 		}
 		fileList := f.Items
 		// Populate idToFile with new ids
@@ -130,6 +132,8 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 	select {
 	case tmp := <-dirChan:
 		return *tmp, nil
+	case err := <-errChan:
+		return nil, err
 	case <-intr:
 		return nil, fuse.EINTR
 	}
