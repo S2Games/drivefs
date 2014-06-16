@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bazil.org/fuse/fs/fstestutil"
 	"code.google.com/p/goauth2/oauth"
 	drive "code.google.com/p/google-api-go-client/drive/v2"
 	"flag"
@@ -31,14 +30,13 @@ var (
 
 // Exists checks if a file or directory exists on disk
 func Exists(fileName string) bool {
-	if a, err := os.Stat(fileName); os.IsNotExist(err) {
+	if _, err := os.Stat(fileName); os.IsNotExist(err) {
 		return false
 	} else {
 		return true
 	}
 }
 func main() {
-	fstestutil.DebugByDefault()
 	flag.Parse()
 	// if the cache file does not exists, create it
 	if !Exists(*cachefile) {
