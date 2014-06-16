@@ -77,7 +77,6 @@ func (d *DriveFile) Setattr(req *fuse.SetattrRequest, resp *fuse.SetattrResponse
 func (d *DriveFile) Write(req *fuse.WriteRequest, resp *fuse.WriteResponse, intr fs.Intr) fuse.Error {
 	// check if d already has a tmp file
 	// If d does not have a tmp file, create one and write to it
-	log.Println(string(req.Data))
 	size, err := d.TmpFile.Write(req.Data)
 	if err != nil {
 		log.Println(err)
@@ -116,9 +115,7 @@ func (d *DriveFile) Flush(req *fuse.FlushRequest, intr fs.Intr) fuse.Error {
 		log.Println(err)
 	}
 	// upload file to google drive
-	log.Println("before")
 	d.File, err = service.Files.Update(d.File.Id, d.File).Media(d.TmpFile).Do()
-	log.Println("after")
 	if err != nil {
 		log.Println(err)
 		return err
