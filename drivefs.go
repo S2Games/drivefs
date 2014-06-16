@@ -34,7 +34,6 @@ func Exists(fileName string) bool {
 	if a, err := os.Stat(fileName); os.IsNotExist(err) {
 		return false
 	} else {
-		log.Println(a)
 		return true
 	}
 }
