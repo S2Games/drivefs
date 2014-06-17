@@ -49,3 +49,6 @@ Simply running ``./drivefs`` will give you a link to open in a browser which wil
 ### Special Thanks
 * [Matt Layher](https://github.com/mdlayher) For his [subfs](https://github.com/mdlayher/subfs) project, which this project was based on.
 * The Creators of [Bazil](http://bazil.org) and [Russ Cox](http://swtch.com/~rsc/) for their FUSE libraries. 
+
+### Notice
+drivefs can only run on *nix systems. You will need the FUSE package for your OS installed(not the FUSE clib). For OSX you will need [OSXFUSE](http://osxfuse.github.io/).
