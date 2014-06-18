@@ -84,6 +84,7 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 	go func() {
 		// List of directories to return
 		var dirs []fuse.Dirent
+		tmpDirMap := make(map[string]fuse.Dirent)
 		// get all new list of files
 		f, err := service.Files.List().Do()
 		if err != nil {
@@ -108,24 +109,33 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 		// Get children of this folder
 		children := c.Items
 
-		dirs = make([]fuse.Dirent, len(children))
-
 		// populate dirs with children
 		for i := range children {
 			// pull out a child temporarally
-			tmp := idToFile[children[i].Id]
-			// If child is a folder/directory create a DirveDir else create a DriveFile
-			if strings.Contains(tmp.File.MimeType, "folder") {
-				dirs[i] = fuse.Dirent{
-					Name: tmp.File.Title,
-					Type: fuse.DT_Dir,
-				}
-			} else {
-				dirs[i] = fuse.Dirent{
-					Name: tmp.File.Title,
-					Type: fuse.DT_File,
+			tmp, ok := idToFile[children[i].Id]
+			// only add if you have access to the file
+			if ok {
+				// If child is a folder/directory create a DirveDir else create a DriveFile
+				if strings.Contains(tmp.File.MimeType, "folder") {
+					tmpDirMap[tmp.File.Id] = fuse.Dirent{
+						Name: tmp.File.Title,
+						Type: fuse.DT_Dir,
+					}
+				} else {
+					tmpDirMap[tmp.File.Id] = fuse.Dirent{
+						Name: tmp.File.Title,
+						Type: fuse.DT_File,
+					}
 				}
 			}
+
+		}
+		// collaps map to a slice and return
+		dirs = make([]fuse.Dirent, len(tmpDirMap))
+		i := 0
+		for _, v := range tmpDirMap {
+			dirs[i] = v
+			i += 1
 		}
 		dirChan <- &dirs
 	}()
