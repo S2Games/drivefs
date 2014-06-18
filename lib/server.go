@@ -30,9 +30,7 @@ func NewServer(config *oauth.Config, code string) (*Server, error) {
 		if code == "" {
 			// Get an authorization code from the data provider.
 			// ("Please ask the user if I can access this resource.")
-			url := d.Config.AuthCodeURL("")
-			log.Println("Visit this URL to get a code, then run again with -code=YOUR_CODE\n")
-			log.Fatalln(url)
+			GetCodeURL(d.Config)
 		}
 		// Exchange the authorization code for an access token.
 		// ("Here's the code you gave the user, now give me a token!")
@@ -53,6 +51,13 @@ func NewServer(config *oauth.Config, code string) (*Server, error) {
 	idToFile = make(map[string]*DriveFile)
 	service, err = drive.New(client)
 	return d, err
+}
+
+// GetCodeURL jumps prints the url to get the users auth code and exits
+func GetCodeURL(config *oauth.Config) {
+	url := config.AuthCodeURL("")
+	log.Println("Visit this URL to get a code, then run again with -code=YOUR_CODE\n")
+	log.Fatalln(url)
 }
 
 // Mount attmpts to mount the filesystem

@@ -43,7 +43,7 @@ go build
 
 ## How to get your Google Drive auth code
 
-Simply running ``./drivefs`` will give you a link to open in a browser which will provide you with your personal code.
+Simply running ``./drivefs -getCode`` will give you a link to open in a browser which will provide you with your personal code.
 
 
 ### Special Thanks

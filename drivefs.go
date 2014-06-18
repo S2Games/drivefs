@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2014 Eliot Hedeman
+Copyright (C) 2014 S2 Games
+All rights reserved.
+*/
 package main
 
 import (
@@ -24,6 +29,7 @@ var (
 	requestURL   = flag.String("request_url", "https://www.googleapis.com/oauth2/v1/userinfo", "API request")
 	code         = flag.String("code", "", "Authorization Code")
 	cachefile    = flag.String("cache", "cache.json", "Token cache file")
+	getCode      = flag.Bool("getCode", false, "if getCode is supplied, a url will be returned to get your auth code at.")
 	// Filesystem options
 	mountpoint = flag.String("mount", "", "Mount point for drivefs")
 	refresh    = flag.Int("refresh", 10, "Rate at which to refresh if local file system has not changed.")
@@ -41,6 +47,7 @@ func Exists(fileName string) bool {
 }
 func main() {
 	flag.Parse()
+
 	// if the cache file does not exists, create it
 	if !Exists(*cachefile) {
 		f, err := os.Create(*cachefile)
@@ -49,6 +56,20 @@ func main() {
 		} else {
 			log.Fatal("CacheFile: ", err)
 		}
+	}
+
+	// Set up a configuration.
+	config := &oauth.Config{
+		ClientId:     *clientId,
+		ClientSecret: *clientSecret,
+		RedirectURL:  *redirectURL,
+		Scope:        drive.DriveScope,
+		AuthURL:      *authURL,
+		TokenURL:     *tokenURL,
+		TokenCache:   oauth.CacheFile(*cachefile),
+	}
+	if *getCode {
+		lib.GetCodeURL(config)
 	}
 	// if the mountpoint given does not exist, make it
 	if *mountpoint == "" {
@@ -61,16 +82,7 @@ func main() {
 			log.Fatal("Mountpoint: ", err)
 		}
 	}
-	// Set up a configuration.
-	config := &oauth.Config{
-		ClientId:     *clientId,
-		ClientSecret: *clientSecret,
-		RedirectURL:  *redirectURL,
-		Scope:        drive.DriveScope,
-		AuthURL:      *authURL,
-		TokenURL:     *tokenURL,
-		TokenCache:   oauth.CacheFile(*cachefile),
-	}
+
 	// fail if the server can't auth
 	server, err := lib.NewServer(config, *code)
 	if err != nil {
