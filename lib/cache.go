@@ -19,9 +19,6 @@ func refreshFileIndex() {
 	}
 	list := f.Items
 	for i := range list {
-		if list[i] == nil {
-			log.Println("here")
-		}
 		tmpFileIndex[list[i].Id] = list[i]
 	}
 	fileIndex = tmpFileIndex
