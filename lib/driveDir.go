@@ -81,22 +81,14 @@ func (d *DriveDir) Lookup(name string, intr fs.Intr) (fs.Node, fuse.Error) {
 func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 	dirChan := make(chan *[]fuse.Dirent)
 	errChan := make(chan error)
+	defer func() {
+		close(dirChan)
+		close(errChan)
+	}()
 	go func() {
 		// List of directories to return
 		var dirs []fuse.Dirent
 		tmpDirMap := make(map[string]fuse.Dirent)
-		// get all new list of files
-		f, err := service.Files.List().Do()
-		if err != nil {
-			log.Println(err)
-			errChan <- err
-			return
-		}
-		fileList := f.Items
-		// Populate idToFile with new ids
-		for i := range fileList {
-			idToFile[fileList[i].Id] = &DriveFile{File: fileList[i], Root: false, Mutex: new(sync.Mutex)}
-		}
 		// get list of children
 		// If d is at root, fetch the root children, else fetch this file's children
 		var c *drive.ChildList
@@ -105,10 +97,8 @@ func (d *DriveDir) ReadDir(intr fs.Intr) ([]fuse.Dirent, fuse.Error) {
 		} else {
 			c = childIndex[d.Dir.Id]
 		}
-
 		// Get children of this folder
 		children := c.Items
-
 		// populate dirs with children
 		for i := range children {
 			// pull out a child temporarally

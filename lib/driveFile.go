@@ -24,7 +24,7 @@ type DriveFile struct {
 // Attr returns the file attributes
 func (d DriveFile) Attr() fuse.Attr {
 	return fuse.Attr{
-		Mode:  0777,
+		Mode:  0644,
 		Mtime: time.Now(),
 		Size:  uint64(d.File.FileSize),
 	}
@@ -128,6 +128,10 @@ func (d *DriveFile) Flush(req *fuse.FlushRequest, intr fs.Intr) fuse.Error {
 	// this is done in another go routine to catch interupts
 	errChan := make(chan error)
 	fileChan := make(chan *drive.File)
+	defer func() {
+		close(errChan)
+		close(fileChan)
+	}()
 	go func() {
 		f, err := service.Files.Update(d.File.Id, d.File).Media(d.TmpFile).Do()
 		if err != nil {

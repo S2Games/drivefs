@@ -11,6 +11,7 @@ import (
 func refreshFileIndex() {
 	// create tmp map to replace fileIndex
 	tmpFileIndex := make(map[string]*drive.File)
+	tmpIdToFile := make(map[string]*DriveFile)
 	// get the file list from the google api
 	f, err := service.Files.List().Do()
 	if err != nil {
@@ -19,8 +20,13 @@ func refreshFileIndex() {
 	}
 	list := f.Items
 	for i := range list {
-		tmpFileIndex[list[i].Id] = list[i]
+		if list[i].DownloadUrl != "" {
+			tmpFileIndex[list[i].Id] = list[i]
+			tmpIdToFile[list[i].Id] = &DriveFile{File: list[i], Root: false, Mutex: new(sync.Mutex)}
+		}
+
 	}
+	idToFile = tmpIdToFile
 	fileIndex = tmpFileIndex
 }
 
