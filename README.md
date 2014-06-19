@@ -54,4 +54,4 @@ Simply running ``./drivefs -getCode`` will give you a link to open in a browser 
 drivefs can only run on *nix systems. You will need the FUSE package for your OS installed(not the FUSE clib). For OSX you will need [OSXFUSE](http://osxfuse.github.io/).
 
 ### Contact
-drivefs was written by [Eliot Hedeman](https://github.com/eliothedeman) Who can be contacted at [eliot.d.hedeman@gmail.com](mailto:eliot.d.hedeman@gmail.com)
+drivefs was written by [Eliot Hedeman](https://github.com/eliothedeman) Who can be contacted at [eliot.d.hedeman@gmail.com](mailto:eliot.d.hedeman@gmail.com).
