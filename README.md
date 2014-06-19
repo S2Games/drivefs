@@ -6,7 +6,7 @@ An experimental **FUSE** filesystem for **Google Drive** written in pure go.
 drivefs is currently functional, but experimental. Bugs still exist so please report them!
 
 ### FUSE functions supported.
-|Function|drifevs|Google Drive|
+|Function|drivefs|Google Drive|
 |:-:|:-:|:-:|
 |Create|X|X|
 |Flush|X|X|
