@@ -10,7 +10,7 @@ import (
 	"code.google.com/p/goauth2/oauth"
 	drive "code.google.com/p/google-api-go-client/drive/v2"
 	"flag"
-	"github.com/eliothedeman/drivefs/lib"
+	"github.com/S2Games/drivefs/lib"
 	"log"
 	"os"
 	"os/signal"
